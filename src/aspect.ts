@@ -1,7 +1,9 @@
 import { IAspect } from 'aws-cdk-lib';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ecs_patterns from 'aws-cdk-lib/aws-ecs-patterns';
+import * as elasticLoadBalancing from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as stepfunctions from 'aws-cdk-lib/aws-stepfunctions';
@@ -99,8 +101,16 @@ export class WatchfulAspect implements IAspect {
       this.watchful.watchFargateEcs(node.node.path, node.service, node.targetGroup);
     }
 
+    if (watchFargateEcs && node instanceof ecs.FargateService) {
+      this.watchful.watchFargateService(node.node.path, node);
+    }
+
     if (watchEc2Ecs && node instanceof ecs_patterns.ApplicationLoadBalancedEc2Service) {
       this.watchful.watchEc2Ecs(node.node.path, node.service, node.targetGroup);
+    }
+
+    if (watchEc2Ecs && node instanceof elasticLoadBalancing.ApplicationTargetGroup) {
+      this.watchful.watchApplicationTargetGroup(node.node.path, node);
     }
   }
 }

@@ -1,96 +1,50 @@
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
-import * as ecs from 'aws-cdk-lib/aws-ecs';
-import { ApplicationTargetGroup } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { TargetGroupBase } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
-import { IWatchful } from './api';
-import { EcsMetricFactory } from './monitoring/aws/ecs/metrics';
+import { IWatchful } from '../api';
+import { WatchEcsServiceOptions } from '../ecs';
+import { EcsMetricFactory } from '../monitoring/aws/ecs/metrics';
 
-
-export interface WatchEcsServiceOptions {
-  /**
-     * Threshold for the Cpu Maximum utilization
-     *
-     * @default 80
-     */
-  readonly cpuMaximumThresholdPercent?: number;
-
-  /**
-   * Threshold for the Memory Maximum utilization.
-   *
-   * @default - 0.
-   */
-  readonly memoryMaximumThresholdPercent?: number;
-
-  /**
-   * Threshold for the Target Response Time.
-   *
-   * @default - 0.
-   */
-  readonly targetResponseTimeThreshold?: number;
-
-  /**
-   * Threshold for the Number of Requests.
-   *
-   * @default - 0.
-   */
-  readonly requestsThreshold?: number;
-
-  /**
-   * Threshold for the Number of Request Errors.
-   *
-   * @default - 0.
-   */
-  readonly requestsErrorRateThreshold?: number;
-}
-
-export interface WatchEcsServiceProps extends WatchEcsServiceOptions {
+export interface WatchTargetGroupProps extends WatchEcsServiceOptions {
   readonly title: string;
   readonly watchful: IWatchful;
-  readonly fargateService?: ecs.FargateService;
-  readonly ec2Service?: ecs.Ec2Service;
-  readonly targetGroup: ApplicationTargetGroup;
+  readonly targetGroup: TargetGroupBase;
+  /**
+   * Whether to add link section at the start of widget
+   * @default - false
+   */
+  readonly skipLinkSection?: boolean;
 }
 
-export class WatchEcsService extends Construct {
+export class WatchTargetGroup extends Construct {
 
   private readonly watchful: IWatchful;
-  private readonly ecsService: any;
-  private readonly targetGroup: ApplicationTargetGroup;
-  private readonly serviceName: string;
-  private readonly clusterName: string;
+  private readonly targetGroup: TargetGroupBase;
   private readonly targetGroupName: string;
   private readonly loadBalancerName: string;
   private readonly metrics: EcsMetricFactory;
 
-  constructor(scope: Construct, id: string, props: WatchEcsServiceProps) {
+  constructor(scope: Construct, id: string, props: WatchTargetGroupProps) {
     super(scope, id);
 
     this.watchful = props.watchful;
-    if (props.ec2Service) {
-      this.ecsService = props.ec2Service;
-      this.serviceName = props.ec2Service.serviceName;
-      this.clusterName = props.ec2Service.cluster.clusterName;
-    } else if (props.fargateService) {
-      this.ecsService = props.fargateService;
-      this.serviceName = props.fargateService.serviceName;
-      this.clusterName = props.fargateService.cluster.clusterName;
-    } else {
-      throw new Error('No service provided to monitor.');
-    }
 
     this.targetGroup = props.targetGroup;
     this.targetGroupName = this.targetGroup.targetGroupFullName;
     this.loadBalancerName = this.targetGroup.firstLoadBalancerFullName;
     this.metrics = new EcsMetricFactory();
 
-    this.watchful.addSection(props.title, {
-      links: [
-        { title: 'ECS Service', url: linkForEcsService(this.ecsService) },
-      ],
-    });
+    const skipLinkSection = props.skipLinkSection ?? false;
+    console.log('###DEBUG-skipLinkSection:', skipLinkSection);
 
-    const { cpuUtilizationMetric, cpuUtilizationAlarm } = this.createCpuUtilizationMonitor(props.cpuMaximumThresholdPercent);
-    const { memoryUtilizationMetric, memoryUtilizationAlarm } = this.createMemoryUtilizationMonitor(props.memoryMaximumThresholdPercent);
+    console.log('###DEBUG-linkForTargetGroup(this.targetGroup):', linkForTargetGroup(this.targetGroup));
+    if (!skipLinkSection) {
+      this.watchful.addSection(props.title, {
+        links: [
+          { title: 'ECS Target Group', url: linkForTargetGroup(this.targetGroup) },
+        ],
+      });
+    }
 
     const { targetResponseTimeMetric, targetResponseTimeAlarm } = this.createTargetResponseTimeMonitor(props.targetResponseTimeThreshold);
     const { healthyHostsMetric, unhealthyHostsMetric } = this.createHostCountMetrics();
@@ -99,21 +53,6 @@ export class WatchEcsService extends Construct {
     const { http2xxMetric, http3xxMetric, http4xxMetric, http5xxMetric } = this.createHttpRequestsMetrics();
     const { requestsErrorRateMetric, requestsErrorRateAlarm } = this.requestsErrorRate(props.requestsErrorRateThreshold);
 
-
-    this.watchful.addWidgets(
-      new cloudwatch.GraphWidget({
-        title: `CPUUtilization/${cpuUtilizationMetric.period.toMinutes()}min`,
-        width: 12,
-        left: [cpuUtilizationMetric],
-        leftAnnotations: [cpuUtilizationAlarm.toAnnotation()],
-      }),
-      new cloudwatch.GraphWidget({
-        title: `MemoryUtilization/${memoryUtilizationMetric.period.toMinutes()}min`,
-        width: 12,
-        left: [memoryUtilizationMetric],
-        leftAnnotations: [memoryUtilizationAlarm.toAnnotation()],
-      }),
-    );
     this.watchful.addWidgets(
       new cloudwatch.SingleValueWidget({
         title: 'Healthy Hosts',
@@ -153,30 +92,6 @@ export class WatchEcsService extends Construct {
         leftAnnotations: [requestsErrorRateAlarm.toAnnotation()],
       }),
     );
-  }
-
-  private createCpuUtilizationMonitor(cpuMaximumThresholdPercent = 0) {
-    const cpuUtilizationMetric = this.metrics.metricCpuUtilizationAverage(this.clusterName, this.serviceName);
-    const cpuUtilizationAlarm = cpuUtilizationMetric.createAlarm(this, 'cpuUtilizationAlarm', {
-      alarmDescription: 'cpuUtilizationAlarm',
-      threshold: cpuMaximumThresholdPercent,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
-      evaluationPeriods: 3,
-    });
-    this.watchful.addAlarm(cpuUtilizationAlarm);
-    return { cpuUtilizationMetric, cpuUtilizationAlarm };
-  }
-
-  private createMemoryUtilizationMonitor(memoryMaximumThresholdPercent = 0) {
-    const memoryUtilizationMetric = this.metrics.metricMemoryUtilizationAverage(this.clusterName, this.serviceName);
-    const memoryUtilizationAlarm = memoryUtilizationMetric.createAlarm(this, 'memoryUtilizationAlarm', {
-      alarmDescription: 'memoryUtilizationAlarm',
-      threshold: memoryMaximumThresholdPercent,
-      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
-      evaluationPeriods: 3,
-    });
-    this.watchful.addAlarm(memoryUtilizationAlarm);
-    return { memoryUtilizationMetric, memoryUtilizationAlarm };
   }
 
   private createTargetResponseTimeMonitor(targetResponseTimeThreshold = 0) {
@@ -233,9 +148,6 @@ export class WatchEcsService extends Construct {
 
 }
 
-
-function linkForEcsService(ecsService: any) {
-  return `https://console.aws.amazon.com/ecs/home?region=${ecsService.stack.region}#/clusters/${ecsService.cluster.clusterName}/services/${ecsService.serviceName}/details`;
+export function linkForTargetGroup(targetGroup: any) {
+  return `https://console.aws.amazon.com/ecs/home?region=${targetGroup.node.scope?.region}#TargetGroup:targetGroupArn=${targetGroup.targetGroupArn}`;
 }
-
-

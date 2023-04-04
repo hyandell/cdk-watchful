@@ -4,7 +4,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as cloudwatch_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
-import { ApplicationTargetGroup } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { ApplicationTargetGroup, TargetGroupBase } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as sns from 'aws-cdk-lib/aws-sns';
@@ -17,6 +17,8 @@ import { WatchApiGatewayOptions, WatchApiGateway } from './api-gateway';
 import { WatchfulAspect, WatchfulAspectProps } from './aspect';
 import { WatchDynamoTableOptions, WatchDynamoTable } from './dynamodb';
 import { WatchEcsServiceOptions, WatchEcsService } from './ecs';
+import { WatchService } from './ecs/service';
+import { WatchTargetGroup } from './ecs/target-group';
 import { WatchLambdaFunctionOptions, WatchLambdaFunction } from './lambda';
 import { WatchRdsAuroraOptions, WatchRdsAurora } from './rds-aurora';
 import { WatchStateMachineOptions, WatchStateMachine } from './state-machine';
@@ -190,6 +192,16 @@ export class Watchful extends Construct implements IWatchful {
   public watchEc2Ecs(title: string, ec2Service: ecs.Ec2Service, targetGroup: ApplicationTargetGroup, options: WatchEcsServiceOptions = {}) {
     return new WatchEcsService(this, Names.uniqueId(ec2Service), {
       title, watchful: this, ec2Service, targetGroup, ...options,
+    });
+  }
+  public watchFargateService(title: string, service: ecs.FargateService, options: WatchEcsServiceOptions = {}) {
+    return new WatchService(this, Names.uniqueId(service), {
+      title, watchful: this, service, ...options,
+    });
+  }
+  public watchApplicationTargetGroup(title: string, targetGroup: TargetGroupBase, options: WatchEcsServiceOptions = {}) {
+    return new WatchTargetGroup(this, Names.uniqueId(targetGroup), {
+      title, watchful: this, targetGroup, ...options,
     });
   }
 }

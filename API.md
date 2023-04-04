@@ -9,7 +9,9 @@ Name|Description
 [WatchEcsService](#cdk-watchful-watchecsservice)|*No description*
 [WatchLambdaFunction](#cdk-watchful-watchlambdafunction)|*No description*
 [WatchRdsAurora](#cdk-watchful-watchrdsaurora)|*No description*
+[WatchService](#cdk-watchful-watchservice)|*No description*
 [WatchStateMachine](#cdk-watchful-watchstatemachine)|*No description*
+[WatchTargetGroup](#cdk-watchful-watchtargetgroup)|*No description*
 [Watchful](#cdk-watchful-watchful)|*No description*
 [WatchfulAspect](#cdk-watchful-watchfulaspect)|A CDK aspect that can automatically watch all resources within a scope.
 
@@ -30,8 +32,10 @@ Name|Description
 [WatchLambdaFunctionProps](#cdk-watchful-watchlambdafunctionprops)|*No description*
 [WatchRdsAuroraOptions](#cdk-watchful-watchrdsauroraoptions)|*No description*
 [WatchRdsAuroraProps](#cdk-watchful-watchrdsauroraprops)|*No description*
+[WatchServiceProps](#cdk-watchful-watchserviceprops)|*No description*
 [WatchStateMachineOptions](#cdk-watchful-watchstatemachineoptions)|*No description*
 [WatchStateMachineProps](#cdk-watchful-watchstatemachineprops)|*No description*
+[WatchTargetGroupProps](#cdk-watchful-watchtargetgroupprops)|*No description*
 [WatchedOperation](#cdk-watchful-watchedoperation)|An operation (path and method) worth monitoring.
 [WatchfulAspectProps](#cdk-watchful-watchfulaspectprops)|*No description*
 [WatchfulProps](#cdk-watchful-watchfulprops)|*No description*
@@ -195,6 +199,38 @@ new WatchRdsAurora(scope: Construct, id: string, props: WatchRdsAuroraProps)
 
 
 
+## class WatchService  <a id="cdk-watchful-watchservice"></a>
+
+
+
+__Implements__: [IConstruct](#constructs-iconstruct), [IDependable](#constructs-idependable)
+__Extends__: [Construct](#constructs-construct)
+
+### Initializer
+
+
+
+
+```ts
+new WatchService(scope: Construct, id: string, props: WatchServiceProps)
+```
+
+* **scope** (<code>[Construct](#constructs-construct)</code>)  *No description*
+* **id** (<code>string</code>)  *No description*
+* **props** (<code>[WatchServiceProps](#cdk-watchful-watchserviceprops)</code>)  *No description*
+  * **cpuMaximumThresholdPercent** (<code>number</code>)  Threshold for the Cpu Maximum utilization. __*Default*__: 80
+  * **memoryMaximumThresholdPercent** (<code>number</code>)  Threshold for the Memory Maximum utilization. __*Default*__: 0.
+  * **requestsErrorRateThreshold** (<code>number</code>)  Threshold for the Number of Request Errors. __*Default*__: 0.
+  * **requestsThreshold** (<code>number</code>)  Threshold for the Number of Requests. __*Default*__: 0.
+  * **targetResponseTimeThreshold** (<code>number</code>)  Threshold for the Target Response Time. __*Default*__: 0.
+  * **service** (<code>[aws_ecs.BaseService](#aws-cdk-lib-aws-ecs-baseservice)</code>)  *No description* 
+  * **title** (<code>string</code>)  *No description* 
+  * **watchful** (<code>[IWatchful](#cdk-watchful-iwatchful)</code>)  *No description* 
+  * **skipLinkSection** (<code>boolean</code>)  Whether to add link section at the start of widget. __*Default*__: false
+
+
+
+
 ## class WatchStateMachine  <a id="cdk-watchful-watchstatemachine"></a>
 
 
@@ -218,6 +254,38 @@ new WatchStateMachine(scope: Construct, id: string, props: WatchStateMachineProp
   * **stateMachine** (<code>[aws_stepfunctions.StateMachine](#aws-cdk-lib-aws-stepfunctions-statemachine)</code>)  *No description* 
   * **title** (<code>string</code>)  *No description* 
   * **watchful** (<code>[IWatchful](#cdk-watchful-iwatchful)</code>)  *No description* 
+
+
+
+
+## class WatchTargetGroup  <a id="cdk-watchful-watchtargetgroup"></a>
+
+
+
+__Implements__: [IConstruct](#constructs-iconstruct), [IDependable](#constructs-idependable)
+__Extends__: [Construct](#constructs-construct)
+
+### Initializer
+
+
+
+
+```ts
+new WatchTargetGroup(scope: Construct, id: string, props: WatchTargetGroupProps)
+```
+
+* **scope** (<code>[Construct](#constructs-construct)</code>)  *No description*
+* **id** (<code>string</code>)  *No description*
+* **props** (<code>[WatchTargetGroupProps](#cdk-watchful-watchtargetgroupprops)</code>)  *No description*
+  * **cpuMaximumThresholdPercent** (<code>number</code>)  Threshold for the Cpu Maximum utilization. __*Default*__: 80
+  * **memoryMaximumThresholdPercent** (<code>number</code>)  Threshold for the Memory Maximum utilization. __*Default*__: 0.
+  * **requestsErrorRateThreshold** (<code>number</code>)  Threshold for the Number of Request Errors. __*Default*__: 0.
+  * **requestsThreshold** (<code>number</code>)  Threshold for the Number of Requests. __*Default*__: 0.
+  * **targetResponseTimeThreshold** (<code>number</code>)  Threshold for the Target Response Time. __*Default*__: 0.
+  * **targetGroup** (<code>[aws_elasticloadbalancingv2.TargetGroupBase](#aws-cdk-lib-aws-elasticloadbalancingv2-targetgroupbase)</code>)  *No description* 
+  * **title** (<code>string</code>)  *No description* 
+  * **watchful** (<code>[IWatchful](#cdk-watchful-iwatchful)</code>)  *No description* 
+  * **skipLinkSection** (<code>boolean</code>)  Whether to add link section at the start of widget. __*Default*__: false
 
 
 
@@ -312,6 +380,26 @@ watchApiGateway(title: string, restApi: RestApi, options?: WatchApiGatewayOption
 __Returns__:
 * <code>[WatchApiGateway](#cdk-watchful-watchapigateway)</code>
 
+#### watchApplicationTargetGroup(title, targetGroup, options?) <a id="cdk-watchful-watchful-watchapplicationtargetgroup"></a>
+
+
+
+```ts
+watchApplicationTargetGroup(title: string, targetGroup: TargetGroupBase, options?: WatchEcsServiceOptions): WatchTargetGroup
+```
+
+* **title** (<code>string</code>)  *No description*
+* **targetGroup** (<code>[aws_elasticloadbalancingv2.TargetGroupBase](#aws-cdk-lib-aws-elasticloadbalancingv2-targetgroupbase)</code>)  *No description*
+* **options** (<code>[WatchEcsServiceOptions](#cdk-watchful-watchecsserviceoptions)</code>)  *No description*
+  * **cpuMaximumThresholdPercent** (<code>number</code>)  Threshold for the Cpu Maximum utilization. __*Default*__: 80
+  * **memoryMaximumThresholdPercent** (<code>number</code>)  Threshold for the Memory Maximum utilization. __*Default*__: 0.
+  * **requestsErrorRateThreshold** (<code>number</code>)  Threshold for the Number of Request Errors. __*Default*__: 0.
+  * **requestsThreshold** (<code>number</code>)  Threshold for the Number of Requests. __*Default*__: 0.
+  * **targetResponseTimeThreshold** (<code>number</code>)  Threshold for the Target Response Time. __*Default*__: 0.
+
+__Returns__:
+* <code>[WatchTargetGroup](#cdk-watchful-watchtargetgroup)</code>
+
 #### watchDynamoTable(title, table, options?) <a id="cdk-watchful-watchful-watchdynamotable"></a>
 
 
@@ -370,6 +458,26 @@ watchFargateEcs(title: string, fargateService: FargateService, targetGroup: Appl
 
 __Returns__:
 * <code>[WatchEcsService](#cdk-watchful-watchecsservice)</code>
+
+#### watchFargateService(title, service, options?) <a id="cdk-watchful-watchful-watchfargateservice"></a>
+
+
+
+```ts
+watchFargateService(title: string, service: FargateService, options?: WatchEcsServiceOptions): WatchService
+```
+
+* **title** (<code>string</code>)  *No description*
+* **service** (<code>[aws_ecs.FargateService](#aws-cdk-lib-aws-ecs-fargateservice)</code>)  *No description*
+* **options** (<code>[WatchEcsServiceOptions](#cdk-watchful-watchecsserviceoptions)</code>)  *No description*
+  * **cpuMaximumThresholdPercent** (<code>number</code>)  Threshold for the Cpu Maximum utilization. __*Default*__: 80
+  * **memoryMaximumThresholdPercent** (<code>number</code>)  Threshold for the Memory Maximum utilization. __*Default*__: 0.
+  * **requestsErrorRateThreshold** (<code>number</code>)  Threshold for the Number of Request Errors. __*Default*__: 0.
+  * **requestsThreshold** (<code>number</code>)  Threshold for the Number of Requests. __*Default*__: 0.
+  * **targetResponseTimeThreshold** (<code>number</code>)  Threshold for the Target Response Time. __*Default*__: 0.
+
+__Returns__:
+* <code>[WatchService](#cdk-watchful-watchservice)</code>
 
 #### watchLambdaFunction(title, fn, options?) <a id="cdk-watchful-watchful-watchlambdafunction"></a>
 
@@ -743,6 +851,27 @@ Name | Type | Description
 
 
 
+## struct WatchServiceProps  <a id="cdk-watchful-watchserviceprops"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**service** | <code>[aws_ecs.BaseService](#aws-cdk-lib-aws-ecs-baseservice)</code> | <span></span>
+**title** | <code>string</code> | <span></span>
+**watchful** | <code>[IWatchful](#cdk-watchful-iwatchful)</code> | <span></span>
+**cpuMaximumThresholdPercent**? | <code>number</code> | Threshold for the Cpu Maximum utilization.<br/>__*Default*__: 80
+**memoryMaximumThresholdPercent**? | <code>number</code> | Threshold for the Memory Maximum utilization.<br/>__*Default*__: 0.
+**requestsErrorRateThreshold**? | <code>number</code> | Threshold for the Number of Request Errors.<br/>__*Default*__: 0.
+**requestsThreshold**? | <code>number</code> | Threshold for the Number of Requests.<br/>__*Default*__: 0.
+**skipLinkSection**? | <code>boolean</code> | Whether to add link section at the start of widget.<br/>__*Default*__: false
+**targetResponseTimeThreshold**? | <code>number</code> | Threshold for the Target Response Time.<br/>__*Default*__: 0.
+
+
+
 ## struct WatchStateMachineOptions  <a id="cdk-watchful-watchstatemachineoptions"></a>
 
 
@@ -769,6 +898,27 @@ Name | Type | Description
 **title** | <code>string</code> | <span></span>
 **watchful** | <code>[IWatchful](#cdk-watchful-iwatchful)</code> | <span></span>
 **metricFailedThreshold**? | <code>number</code> | Alarm when execution failures reach this threshold over 1 minute.<br/>__*Default*__: 1 any execution failure will trigger the alarm
+
+
+
+## struct WatchTargetGroupProps  <a id="cdk-watchful-watchtargetgroupprops"></a>
+
+
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**targetGroup** | <code>[aws_elasticloadbalancingv2.TargetGroupBase](#aws-cdk-lib-aws-elasticloadbalancingv2-targetgroupbase)</code> | <span></span>
+**title** | <code>string</code> | <span></span>
+**watchful** | <code>[IWatchful](#cdk-watchful-iwatchful)</code> | <span></span>
+**cpuMaximumThresholdPercent**? | <code>number</code> | Threshold for the Cpu Maximum utilization.<br/>__*Default*__: 80
+**memoryMaximumThresholdPercent**? | <code>number</code> | Threshold for the Memory Maximum utilization.<br/>__*Default*__: 0.
+**requestsErrorRateThreshold**? | <code>number</code> | Threshold for the Number of Request Errors.<br/>__*Default*__: 0.
+**requestsThreshold**? | <code>number</code> | Threshold for the Number of Requests.<br/>__*Default*__: 0.
+**skipLinkSection**? | <code>boolean</code> | Whether to add link section at the start of widget.<br/>__*Default*__: false
+**targetResponseTimeThreshold**? | <code>number</code> | Threshold for the Target Response Time.<br/>__*Default*__: 0.
 
 
 
