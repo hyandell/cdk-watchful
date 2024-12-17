@@ -154,8 +154,11 @@ new WatchLambdaFunction(scope: Construct, id: string, props: WatchLambdaFunction
 * **scope** (<code>[Construct](#constructs-construct)</code>)  *No description*
 * **id** (<code>string</code>)  *No description*
 * **props** (<code>[WatchLambdaFunctionProps](#cdk-watchful-watchlambdafunctionprops)</code>)  *No description*
+  * **durationEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the duration alarms. __*Default*__: 3
   * **durationThresholdPercent** (<code>number</code>)  Threshold for the duration alarm as percentage of the function's timeout value. __*Default*__: 80
+  * **errorsEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the errors alarms. __*Default*__: 3
   * **errorsPerMinuteThreshold** (<code>number</code>)  Number of allowed errors per minute. __*Default*__: 0
+  * **throttlesEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the throttles alarms. __*Default*__: 3
   * **throttlesPerMinuteThreshold** (<code>number</code>)  Number of allowed throttles per minute. __*Default*__: 0
   * **fn** (<code>[aws_lambda.Function](#aws-cdk-lib-aws-lambda-function)</code>)  *No description* 
   * **title** (<code>string</code>)  *No description* 
@@ -382,8 +385,11 @@ watchLambdaFunction(title: string, fn: Function, options?: WatchLambdaFunctionOp
 * **title** (<code>string</code>)  *No description*
 * **fn** (<code>[aws_lambda.Function](#aws-cdk-lib-aws-lambda-function)</code>)  *No description*
 * **options** (<code>[WatchLambdaFunctionOptions](#cdk-watchful-watchlambdafunctionoptions)</code>)  *No description*
+  * **durationEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the duration alarms. __*Default*__: 3
   * **durationThresholdPercent** (<code>number</code>)  Threshold for the duration alarm as percentage of the function's timeout value. __*Default*__: 80
+  * **errorsEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the errors alarms. __*Default*__: 3
   * **errorsPerMinuteThreshold** (<code>number</code>)  Number of allowed errors per minute. __*Default*__: 0
+  * **throttlesEvaluationPeriods** (<code>number</code>)  Number of periods to evaluate for the throttles alarms. __*Default*__: 3
   * **throttlesPerMinuteThreshold** (<code>number</code>)  Number of allowed throttles per minute. __*Default*__: 0
 
 __Returns__:
@@ -682,8 +688,11 @@ Name | Type | Description
 
 Name | Type | Description 
 -----|------|-------------
+**durationEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the duration alarms.<br/>__*Default*__: 3
 **durationThresholdPercent**?🔹 | <code>number</code> | Threshold for the duration alarm as percentage of the function's timeout value.<br/>__*Default*__: 80
+**errorsEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the errors alarms.<br/>__*Default*__: 3
 **errorsPerMinuteThreshold**?🔹 | <code>number</code> | Number of allowed errors per minute.<br/>__*Default*__: 0
+**throttlesEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the throttles alarms.<br/>__*Default*__: 3
 **throttlesPerMinuteThreshold**?🔹 | <code>number</code> | Number of allowed throttles per minute.<br/>__*Default*__: 0
 
 
@@ -700,8 +709,11 @@ Name | Type | Description
 **fn**🔹 | <code>[aws_lambda.Function](#aws-cdk-lib-aws-lambda-function)</code> | <span></span>
 **title**🔹 | <code>string</code> | <span></span>
 **watchful**🔹 | <code>[IWatchful](#cdk-watchful-iwatchful)</code> | <span></span>
+**durationEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the duration alarms.<br/>__*Default*__: 3
 **durationThresholdPercent**?🔹 | <code>number</code> | Threshold for the duration alarm as percentage of the function's timeout value.<br/>__*Default*__: 80
+**errorsEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the errors alarms.<br/>__*Default*__: 3
 **errorsPerMinuteThreshold**?🔹 | <code>number</code> | Number of allowed errors per minute.<br/>__*Default*__: 0
+**throttlesEvaluationPeriods**?🔹 | <code>number</code> | Number of periods to evaluate for the throttles alarms.<br/>__*Default*__: 3
 **throttlesPerMinuteThreshold**?🔹 | <code>number</code> | Number of allowed throttles per minute.<br/>__*Default*__: 0
 
 

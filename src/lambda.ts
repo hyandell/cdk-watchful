@@ -31,6 +31,27 @@ export interface WatchLambdaFunctionOptions {
    * @default 80
    */
   readonly durationThresholdPercent?: number;
+
+  /**
+   * Number of periods to evaluate for the errors alarms.
+   *
+   * @default 3
+   */
+  readonly errorsEvaluationPeriods?: number;
+
+  /**
+   * Number of periods to evaluate for the throttles alarms.
+   *
+   * @default 3
+   */
+  readonly throttlesEvaluationPeriods?: number;
+
+  /**
+   * Number of periods to evaluate for the duration alarms.
+   *
+   * @default 3
+   */
+  readonly durationEvaluationPeriods?: number;
 }
 
 export interface WatchLambdaFunctionProps extends WatchLambdaFunctionOptions {
@@ -40,7 +61,6 @@ export interface WatchLambdaFunctionProps extends WatchLambdaFunctionOptions {
 }
 
 export class WatchLambdaFunction extends Construct {
-
   private readonly watchful: IWatchful;
   private readonly fn: lambda.Function;
   private readonly metrics: LambdaMetricFactory;
@@ -62,10 +82,22 @@ export class WatchLambdaFunction extends Construct {
       ],
     });
 
-    const { errorsMetric, errorsAlarm } = this.createErrorsMonitor(props.errorsPerMinuteThreshold);
-    const { throttlesMetric, throttlesAlarm } = this.createThrottlesMonitor(props.throttlesPerMinuteThreshold);
-    const { durationMetric, durationAlarm } = this.createDurationMonitor(timeoutSec, props.durationThresholdPercent);
-    const invocationsMetric = this.metrics.metricInvocations(this.fn.functionName);
+    const { errorsMetric, errorsAlarm } = this.createErrorsMonitor(
+      props.errorsPerMinuteThreshold,
+      props.errorsEvaluationPeriods,
+    );
+    const { throttlesMetric, throttlesAlarm } = this.createThrottlesMonitor(
+      props.throttlesPerMinuteThreshold,
+      props.throttlesEvaluationPeriods,
+    );
+    const { durationMetric, durationAlarm } = this.createDurationMonitor(
+      timeoutSec,
+      props.durationThresholdPercent,
+      props.durationEvaluationPeriods,
+    );
+    const invocationsMetric = this.metrics.metricInvocations(
+      this.fn.functionName,
+    );
 
     this.watchful.addWidgets(
       new cloudwatch.GraphWidget({
@@ -94,41 +126,53 @@ export class WatchLambdaFunction extends Construct {
     );
   }
 
-  private createErrorsMonitor(errorsPerMinuteThreshold = 0) {
+  private createErrorsMonitor(
+    errorsPerMinuteThreshold = 0,
+    evaluationPeriods = 3,
+  ) {
     const fn = this.fn;
     const errorsMetric = this.metrics.metricErrors(fn.functionName);
     const errorsAlarm = errorsMetric.createAlarm(this, 'ErrorsAlarm', {
       alarmDescription: `Over ${errorsPerMinuteThreshold} errors per minute`,
       threshold: errorsPerMinuteThreshold,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
-      evaluationPeriods: 3,
+      evaluationPeriods,
     });
     this.watchful.addAlarm(errorsAlarm);
     return { errorsMetric, errorsAlarm };
   }
 
-  private createThrottlesMonitor(throttlesPerMinuteThreshold = 0) {
+  private createThrottlesMonitor(
+    throttlesPerMinuteThreshold = 0,
+    evaluationPeriods = 3,
+  ) {
     const fn = this.fn;
     const throttlesMetric = this.metrics.metricThrottles(fn.functionName);
     const throttlesAlarm = throttlesMetric.createAlarm(this, 'ThrottlesAlarm', {
       alarmDescription: `Over ${throttlesPerMinuteThreshold} throttles per minute`,
       threshold: throttlesPerMinuteThreshold,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
-      evaluationPeriods: 3,
+      evaluationPeriods,
     });
     this.watchful.addAlarm(throttlesAlarm);
     return { throttlesMetric, throttlesAlarm };
   }
 
-  private createDurationMonitor(timeoutSec: number, durationPercentThreshold: number = DEFAULT_DURATION_THRESHOLD_PERCENT) {
+  private createDurationMonitor(
+    timeoutSec: number,
+    durationPercentThreshold: number = DEFAULT_DURATION_THRESHOLD_PERCENT,
+    evaluationPeriods = 3,
+  ) {
     const fn = this.fn;
     const durationMetric = this.metrics.metricDuration(fn.functionName).p99;
-    const durationThresholdSec = Math.floor(durationPercentThreshold / 100 * timeoutSec);
+    const durationThresholdSec = Math.floor(
+      (durationPercentThreshold / 100) * timeoutSec,
+    );
     const durationAlarm = durationMetric.createAlarm(this, 'DurationAlarm', {
       alarmDescription: `p99 latency >= ${durationThresholdSec}s (${durationPercentThreshold}%)`,
       comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD,
       threshold: durationThresholdSec * 1000, // milliseconds
-      evaluationPeriods: 3,
+      evaluationPeriods,
     });
     this.watchful.addAlarm(durationAlarm);
     return { durationMetric, durationAlarm };
